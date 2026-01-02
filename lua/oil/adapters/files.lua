@@ -142,6 +142,59 @@ if not fs.is_windows then
       end)
     end,
   }
+  file_columns.owner = {
+    require_stat = true,
+
+    render = function(entry, conf)
+      local meta = entry[FIELD_META]
+      local stat = meta and meta.stat
+      if not stat then
+        return columns.EMPTY
+      end
+      return string.format("%s %s", permissions.uid_to_name(stat.uid), permissions.gid_to_name(stat.gid))
+    end,
+
+    parse = function(line, conf)
+      return line:match("^([^%s]+%s+[^%s]+)%s+(.+)$")
+    end,
+
+    get_sort_value = function (entry)
+      local meta = entry[FIELD_META]
+      local stat = meta and meta.stat
+      if stat then
+        return stat.uid
+      else
+        return 0
+      end
+    end
+    -- TODO: make this column editable
+  }
+  file_columns.nlink = {
+    require_stat = true,
+
+    render = function(entry, conf)
+      local meta = entry[FIELD_META]
+      local stat = meta and meta.stat
+      if not stat then
+        return columns.EMPTY
+      end
+      return string.format("%d", stat.nlink)
+    end,
+
+    parse = function(line, conf)
+      return line:match("^(%d+)%s+(.*)$")
+    end,
+
+    get_sort_value = function (entry)
+      local meta = entry[FIELD_META]
+      local stat = meta and meta.stat
+      if stat then
+        return stat.nlink
+      else
+        return 0
+      end
+    end
+  }
 end
 
 local current_year

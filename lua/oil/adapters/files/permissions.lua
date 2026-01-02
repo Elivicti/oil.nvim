@@ -16,6 +16,20 @@ local function perm_to_str(exe_modifier, num)
   end
 end
 
+---@param gid integer
+---@return string
+M.gid_to_name = function (gid)
+	local res = vim.fn.system(string.format("id -ng %d", gid))
+	return vim.trim(res)
+end
+
+---@param uid integer
+---@return string
+M.uid_to_name = function (uid)
+	local res = vim.fn.system(string.format("id -nu %d", uid))
+	return vim.trim(res)
+end
+
 ---@param mode integer
 ---@return string
 M.mode_to_str = function(mode)
