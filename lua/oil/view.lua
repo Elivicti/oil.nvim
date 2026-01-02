@@ -766,7 +766,7 @@ M.format_entry_cols = function(entry, column_defs, col_width, adapter, is_hidden
   local name = entry[FIELD_NAME]
   local meta = entry[FIELD_META]
   local hl_suffix = ""
-  if is_hidden then
+  if is_hidden and config.view_options.highlight_hidden then
     hl_suffix = "Hidden"
   end
   if meta and meta.display_name then

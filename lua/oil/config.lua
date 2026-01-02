@@ -78,6 +78,8 @@ local default_config = {
   -- Set to false to disable all of the above keymaps
   use_default_keymaps = true,
   view_options = {
+    --- hidden files will have seperate highlight groups
+    highlight_hidden = true,
     -- Show files and directories that start with "."
     show_hidden = false,
     -- This function defines what is considered a "hidden" file
