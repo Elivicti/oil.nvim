@@ -523,20 +523,25 @@ M.list = function(url, column_defs, cb)
             cb(err)
           end)
           return
-        elseif entries then
-          local poll = util.cb_collect(#entries, function(inner_err)
-            if inner_err then
-              cb(inner_err)
-            else
-              cb(nil, internal_entries, read_next)
-            end
-          end)
-          for _, entry in ipairs(entries) do
-            local cache_entry = cache.create_entry(url, entry.name, entry.type)
-            table.insert(internal_entries, cache_entry)
-            fetch_entry_metadata(path, cache_entry, require_stat, poll)
+        end
+        local should_close = entries == nil
+        entries = entries or {}
+        table.insert(entries, { name = ".", type = "directory" })
+        table.insert(entries, { name = "..", type = "directory" })
+
+        local poll = util.cb_collect(#entries, function(inner_err)
+          if inner_err then
+            cb(inner_err)
+          else
+            cb(nil, internal_entries, read_next)
           end
-        else
+        end)
+        for _, entry in ipairs(entries) do
+          local cache_entry = cache.create_entry(url, entry.name, entry.type)
+          table.insert(internal_entries, cache_entry)
+          fetch_entry_metadata(path, cache_entry, require_stat, poll)
+        end
+        if should_close then
           uv.fs_closedir(fd, function(close_err)
             if close_err then
               cb(close_err)
@@ -616,6 +621,11 @@ end
 ---@param action oil.Action
 ---@param cb fun(err: nil|string)
 M.perform_action = function(action, cb)
+  local name = string.match(action.url or action.src_url, "([^/\\]+)$")
+  if name == "." or name == ".." then
+    cb() -- actions are not allowed on these directories, just ignore
+    return
+  end
   if action.type == "create" then
     local _, path = util.parse_url(action.url)
     assert(path)

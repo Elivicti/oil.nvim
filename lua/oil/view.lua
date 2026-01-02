@@ -675,12 +675,6 @@ local function render_buffer(bufnr, opts)
     col_align[i + 1] = conf and conf.align or "left"
   end
 
-  if M.should_display("..", bufnr) then
-    local cols =
-      M.format_entry_cols({ 0, "..", "directory" }, column_defs, col_width, adapter, true, bufnr)
-    table.insert(line_table, cols)
-  end
-
   for _, entry in ipairs(entry_list) do
     local should_display, is_hidden = M.should_display(entry[FIELD_NAME], bufnr)
     if should_display then
