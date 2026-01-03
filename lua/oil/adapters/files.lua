@@ -533,7 +533,19 @@ M.list = function(url, column_defs, cb)
           if inner_err then
             cb(inner_err)
           else
-            cb(nil, internal_entries, read_next)
+            -- old logic: cb(nil, internal_entries, read_next)
+            -- TODO: May need thorough testing
+            -- On windows, because of two manually added entries, the old logic will crash neovim as soon as
+            -- oil buffer is shown. After debugging I found that the crash happens because of memory access
+            -- violation at:
+            -- libuv/src/win/fs.c:fs__readdir: memset(dirents, 0, dir->nentries * sizeof(*dir->dirents));
+            -- I'm not sure the exact reason, but since entry count is 2 more than it should be, the read_next
+            -- functin may be called in some unexpected situation, which may have caused dir->nentries to be
+            -- some wrong value.
+            -- The following change is tested on:
+            -- Windows 10(22H2, 19045.6466) / Powershell 7.5.4: neovim v0.11.5
+            -- Archlinux(WSL 2, 6.6.87.2) / zsh 5.9: neovim v0.11.4
+            cb(nil, internal_entries, nil)
           end
         end)
         for _, entry in ipairs(entries) do
