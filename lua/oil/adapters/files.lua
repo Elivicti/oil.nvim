@@ -195,6 +195,71 @@ if not fs.is_windows then
       end
     end
   }
+else -- is_windows
+  file_columns.permissions = {
+    require_stat = true,
+
+    render = function(entry, conf)
+      local meta = entry[FIELD_META]
+      local stat = meta and meta.stat
+      if not stat then
+        return columns.EMPTY
+      end
+      return "rwxrwxrwx"
+    end,
+
+    parse = function(line, conf)
+      return permissions.parse(line)
+    end,
+
+	get_sort_value = function (entry)
+		return 0
+	end
+  }
+  file_columns.owner = {
+    require_stat = true,
+
+    render = function(entry, conf)
+      -- tried Get-Acl, but it is too slow, and only works for newer version of powershell
+      -- use current username for now
+      return vim.env.USER or vim.env.LOGNAME or vim.env.USERNAME
+    end,
+
+    parse = function(line, conf)
+      -- TODO: this will break if username or hostname contains whitespaces
+      return line:match("^%s*([^%s]+)%s+(.+)$")
+    end,
+
+    get_sort_value = function (entry)
+      return 0
+    end
+  }
+  file_columns.nlink = {
+    require_stat = true,
+
+    render = function(entry, conf)
+      local meta = entry[FIELD_META]
+      local stat = meta and meta.stat
+      if not stat then
+        return columns.EMPTY
+      end
+      return string.format("%d", stat.nlink)
+    end,
+
+    parse = function(line, conf)
+      return line:match("^%s*(%d+)%s+(.*)$")
+    end,
+
+    get_sort_value = function (entry)
+      local meta = entry[FIELD_META]
+      local stat = meta and meta.stat
+      if stat then
+        return stat.nlink
+      else
+        return 0
+      end
+    end
+  }
 end
 
 local current_year
