@@ -182,7 +182,7 @@ file_columns.mtime = {
     else
       pattern = "%S+%s+%d+%s+%d%d:?%d%d"
     end
-    return line:match("^(" .. pattern .. ")%s+(.+)$")
+    return line:match("^%s*(" .. pattern .. ")%s+(.+)$")
   end,
 }
 

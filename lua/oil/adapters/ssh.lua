@@ -164,7 +164,7 @@ ssh_columns.size = {
   end,
 
   parse = function(line, conf)
-    return line:match("^(%d+%S*)%s+(.*)$")
+    return line:match("^%s*(%d+%S*)%s+(.*)$")
   end,
 
   get_sort_value = function(entry)

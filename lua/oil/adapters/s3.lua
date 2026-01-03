@@ -96,7 +96,7 @@ s3_columns.size = {
   end,
 
   parse = function(line, conf)
-    return line:match("^(%d+%S*)%s+(.*)$")
+    return line:match("^%s*(%d+%S*)%s+(.*)$")
   end,
 
   get_sort_value = function(entry)
@@ -120,7 +120,7 @@ s3_columns.birthtime = {
   end,
 
   parse = function(line, conf)
-    return line:match("^(%d+%-%d+%-%d+%s%d+:%d+:%d+)%s+(.*)$")
+    return line:match("^%s*(%d+%-%d+%-%d+%s%d+:%d+:%d+)%s+(.*)$")
   end,
 
   get_sort_value = function(entry)

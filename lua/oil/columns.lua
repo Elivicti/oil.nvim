@@ -183,7 +183,7 @@ if icon_provider then
     end,
 
     parse = function(line, conf)
-      return line:match("^(%S+)%s+(.*)$")
+      return line:match("^%s*(%S+)%s+(.*)$")
     end,
   })
 end
@@ -216,7 +216,7 @@ M.register("type", {
   end,
 
   parse = function(line, conf)
-    return line:match("^(%S+)%s+(.*)$")
+    return line:match("^%s*(%S+)%s+(.*)$")
   end,
 
   get_sort_value = function(entry)

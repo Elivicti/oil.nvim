@@ -97,7 +97,7 @@ end
 ---@return nil|integer
 ---@return nil|string
 M.parse = function(line)
-  local strval, rem = line:match("^([r%-][w%-][xsS%-][r%-][w%-][xsS%-][r%-][w%-][xtT%-])%s*(.*)$")
+  local strval, rem = line:match("^%s*([r%-][w%-][xsS%-][r%-][w%-][xsS%-][r%-][w%-][xtT%-])%s*(.*)$")
   if not strval then
     return
   end

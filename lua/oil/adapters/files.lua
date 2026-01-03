@@ -82,7 +82,7 @@ file_columns.size = {
   end,
 
   parse = function(line, conf)
-    return line:match("^(%d+%S*)%s+(.*)$")
+    return line:match("^%s*(%d+%S*)%s+(.*)$")
   end,
 }
 
@@ -155,7 +155,7 @@ if not fs.is_windows then
     end,
 
     parse = function(line, conf)
-      return line:match("^([^%s]+%s+[^%s]+)%s+(.+)$")
+      return line:match("^%s*([^%s]+%s+[^%s]+)%s+(.+)$")
     end,
 
     get_sort_value = function (entry)
@@ -182,7 +182,7 @@ if not fs.is_windows then
     end,
 
     parse = function(line, conf)
-      return line:match("^(%d+)%s+(.*)$")
+      return line:match("^%s*(%d+)%s+(.*)$")
     end,
 
     get_sort_value = function (entry)
@@ -249,7 +249,7 @@ for _, time_key in ipairs({ "ctime", "mtime", "atime", "birthtime" }) do
       else
         pattern = "%S+%s+%d+%s+%d%d:?%d%d"
       end
-      return line:match("^(" .. pattern .. ")%s+(.+)$")
+      return line:match("^%s*(" .. pattern .. ")%s+(.+)$")
     end,
 
     get_sort_value = function(entry)
