@@ -242,24 +242,34 @@ M.register("name", {
   end,
 
   create_sort_value_factory = function(num_entries)
+    -- this is used to ensure . and .. are always on top
+	-- space is the smallest printable ascii character (0x20)
+    local map_dotdot = function (name)
+      if name == "." then
+        return " "
+      elseif name == ".." then
+        return "  "
+      end
+      return name
+    end
     if
       config.view_options.natural_order == false
       or (config.view_options.natural_order == "fast" and num_entries > 5000)
     then
       if config.view_options.case_insensitive then
         return function(entry)
-          return entry[FIELD_NAME]:lower()
+          return map_dotdot(entry[FIELD_NAME]):lower()
         end
       else
         return function(entry)
-          return entry[FIELD_NAME]
+          return map_dotdot(entry[FIELD_NAME])
         end
       end
     else
       local memo = {}
       return function(entry)
         if memo[entry] == nil then
-          local name = entry[FIELD_NAME]:gsub("0*(%d+)", adjust_number)
+          local name = map_dotdot(entry[FIELD_NAME]):gsub("0*(%d+)", adjust_number)
           if config.view_options.case_insensitive then
             name = name:lower()
           end
