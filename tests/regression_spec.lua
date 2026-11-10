@@ -23,6 +23,13 @@ a.describe("regression tests", function()
     vim.cmd.edit({ args = { "README.md" } })
     vim.cmd.vsplit()
     vim.cmd.edit({ args = { "%:p:h" } })
+    -- The buffer is hijacked asynchronously by the BufAdd autocmd
+    for _ = 1, 100 do
+      if vim.bo.filetype == "oil" then
+        break
+      end
+      a.util.sleep(10)
+    end
     assert.equals("oil", vim.bo.filetype)
     vim.cmd.wincmd({ args = { "p" } })
     assert.equals("markdown", vim.bo.filetype)
@@ -98,10 +105,7 @@ a.describe("regression tests", function()
     end, 10)
     test_util.feedkeys({ "p" }, 10)
     a.util.scheduler()
-    oil.save({ confirm = false })
-    vim.wait(1000, function()
-      return vim.bo.modifiable
-    end, 10)
+    test_util.actions.save()
     tmpdir:assert_fs({
       ["test/a.txt"] = "a.txt",
     })
