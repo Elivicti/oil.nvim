@@ -145,7 +145,73 @@ if not fs.is_windows then
       end)
     end,
   }
+
+  ---Build a non-editable column that displays a user or group name
+  ---@param stat_key "uid"|"gid"
+  ---@param resolve fun(id: integer): string
+  ---@return oil.ColumnDefinition
+  local function id_name_column(stat_key, resolve)
+    return {
+      require_stat = true,
+
+      render = function(entry, conf)
+        local meta = entry[FIELD_META]
+        local stat = meta and meta.stat
+        if not stat or not stat[stat_key] then
+          return columns.EMPTY
+        end
+        return resolve(stat[stat_key])
+      end,
+
+      -- Not editable: consume one token and discard the value. This keeps the
+      -- remaining columns aligned even if the name is missing or malformed.
+      parse = function(line, conf)
+        local rem = line:match("^%S+%s+(.*)$")
+        return nil, rem
+      end,
+
+      get_sort_value = function(entry)
+        local meta = entry[FIELD_META]
+        local stat = meta and meta.stat
+        if stat and stat[stat_key] then
+          return resolve(stat[stat_key])
+        else
+          return ""
+        end
+      end,
+    }
+  end
+
+  file_columns.owner = id_name_column("uid", permissions.uid_to_name)
+  file_columns.group = id_name_column("gid", permissions.gid_to_name)
 end
+
+file_columns.nlink = {
+  require_stat = true,
+
+  render = function(entry, conf)
+    local meta = entry[FIELD_META]
+    local stat = meta and meta.stat
+    if not stat then
+      return columns.EMPTY
+    end
+    return string.format("%d", stat.nlink)
+  end,
+
+  parse = function(line, conf)
+    return line:match("^%s*(%d+)%s+(.*)$")
+  end,
+
+  get_sort_value = function(entry)
+    local meta = entry[FIELD_META]
+    local stat = meta and meta.stat
+    if stat then
+      return stat.nlink
+    else
+      return 0
+    end
+  end,
+}
 
 local current_year
 -- Make sure we run this import-time effect in the main loop (mostly for tests)

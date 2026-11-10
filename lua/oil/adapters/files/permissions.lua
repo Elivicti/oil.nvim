@@ -16,6 +16,43 @@ local function perm_to_str(exe_modifier, num)
   end
 end
 
+local uid_names = {}
+local gid_names = {}
+
+---Resolve a uid/gid to a name, falling back to the numeric id.
+---Results are cached because a directory typically has very few distinct owners.
+---@param kind "u"|"g"
+---@param id integer
+---@return string
+local function id_to_name(kind, id)
+  local cache = kind == "u" and uid_names or gid_names
+  local key = tostring(id)
+  if cache[key] == nil then
+    local name = ""
+    if vim.fn.executable("id") == 1 then
+      name = vim.trim(vim.fn.system({ "id", kind == "u" and "-nu" or "-ng", key }) or "")
+      if vim.v.shell_error ~= 0 then
+        name = ""
+      end
+    end
+    -- Fall back to the numeric id when it cannot be resolved
+    cache[key] = name ~= "" and name or key
+  end
+  return cache[key]
+end
+
+---@param uid integer
+---@return string
+M.uid_to_name = function(uid)
+  return id_to_name("u", uid)
+end
+
+---@param gid integer
+---@return string
+M.gid_to_name = function(gid)
+  return id_to_name("g", gid)
+end
+
 ---@param mode integer
 ---@return string
 M.mode_to_str = function(mode)

@@ -170,4 +170,15 @@ a.describe("files adapter", function()
     assert.equals(vim.fn.fnamemodify(tmpdir.path, ":p") .. "file.rb", vim.api.nvim_buf_get_name(0))
     assert.equals(tmpdir.path .. "/file.rb", vim.fn.bufname())
   end)
+
+  a.it("parses owner, group, and nlink columns without errors", function()
+    tmpdir:create({ "a.txt" })
+    require("oil").setup({
+      columns = { "permissions", "owner", "group", "nlink", "size" },
+    })
+    test_util.actions.open({ tmpdir.path })
+    local diffs, errors = require("oil.mutator.parser").parse(0)
+    assert.equals(0, #diffs)
+    assert.equals(0, #errors)
+  end)
 end)
