@@ -184,6 +184,60 @@ if not fs.is_windows then
 
   file_columns.owner = id_name_column("uid", permissions.uid_to_name)
   file_columns.group = id_name_column("gid", permissions.gid_to_name)
+else -- is_windows
+  ---Windows does not expose the file owner/group through libuv, and nlink is
+  ---always 1. Register placeholder columns so a dired-style column layout stays
+  ---consistent; they render as "-" and are not sortable.
+  ---@return oil.ColumnDefinition
+  local function placeholder_column()
+    return {
+      render = function(entry, conf)
+        return columns.EMPTY
+      end,
+
+      -- Not editable, but consume a token to keep the remaining columns aligned
+      parse = function(line, conf)
+        local rem = line:match("^%S+%s+(.*)$")
+        return nil, rem
+      end,
+    }
+  end
+
+  -- libuv does not expose the Windows ACL, so permissions/owner are
+  -- placeholders. Keep them populated (instead of columns full of "-") so the
+  -- dired-style layout stays readable. "group" is intentionally not registered.
+  file_columns.permissions = {
+    render = function(entry, conf)
+      return "rwxrwxrwx"
+    end,
+
+    parse = function(line, conf)
+      return permissions.parse(line)
+    end,
+
+    get_sort_value = function(entry)
+      return 0
+    end,
+  }
+
+  file_columns.owner = {
+    render = function(entry, conf)
+      -- Get-Acl is too slow and not available on older PowerShell versions
+      return vim.env.USER or vim.env.LOGNAME or vim.env.USERNAME or "?"
+    end,
+
+    -- Not editable, but consume a token to keep the remaining columns aligned
+    parse = function(line, conf)
+      local rem = line:match("^%S+%s+(.*)$")
+      return nil, rem
+    end,
+
+    get_sort_value = function(entry)
+      return 0
+    end,
+  }
+
+  file_columns.group = placeholder_column()
 end
 
 file_columns.nlink = {
