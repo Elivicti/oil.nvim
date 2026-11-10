@@ -92,6 +92,19 @@ local default_config = {
     is_always_hidden = function(name, bufnr)
       return false
     end,
+    -- Customize the highlight group used for hidden files. Set a string to use
+    -- the same group for all hidden entries, or a table to configure them per
+    -- entry type. Set a value to false to use the normal (non-hidden) group.
+    -- Ignored for entries where `highlight_filename` returns a group.
+    hidden_highlight = {
+      file = "OilFileHidden",
+      directory = "OilDirHidden",
+      socket = "OilSocketHidden",
+      link = "OilLinkHidden",
+      link_target = "OilLinkTargetHidden",
+      orphan_link = "OilOrphanLinkHidden",
+      orphan_link_target = "OilOrphanLinkTargetHidden",
+    },
     -- Sort file names with numbers in a more intuitive order for humans.
     -- Can be "fast", true, or false. "fast" will turn it off for large directories.
     natural_order = "fast",

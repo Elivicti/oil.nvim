@@ -831,6 +831,32 @@ local function get_link_text(name, meta)
   return name, link_text
 end
 
+---Decide the highlight group for an entry, honoring the hidden_highlight config
+---@param kind string
+---@param normal_hl string
+---@param is_hidden boolean
+---@return string
+local function get_entry_hl(kind, normal_hl, is_hidden)
+  if not is_hidden then
+    return normal_hl
+  end
+  local hidden = config.view_options.hidden_highlight
+  if hidden == false then
+    return normal_hl
+  elseif type(hidden) == "string" then
+    return hidden
+  elseif type(hidden) == "table" then
+    ---@cast hidden table<string, string|false>
+    local custom = hidden[kind]
+    if custom == false then
+      return normal_hl
+    elseif type(custom) == "string" then
+      return custom
+    end
+  end
+  return normal_hl .. "Hidden"
+end
+
 ---@private
 ---@param entry oil.InternalEntry
 ---@param column_defs table[]
@@ -842,10 +868,6 @@ end
 M.format_entry_cols = function(entry, column_defs, col_width, adapter, is_hidden, bufnr)
   local name = entry[FIELD_NAME]
   local meta = entry[FIELD_META]
-  local hl_suffix = ""
-  if is_hidden then
-    hl_suffix = "Hidden"
-  end
   if meta and meta.display_name then
     name = meta.display_name
   end
@@ -896,27 +918,35 @@ M.format_entry_cols = function(entry, column_defs, col_width, adapter, is_hidden
   end
 
   if entry_type == "directory" then
-    table.insert(cols, { name .. "/", "OilDir" .. hl_suffix })
+    table.insert(cols, { name .. "/", get_entry_hl("directory", "OilDir", is_hidden) })
   elseif entry_type == "socket" then
-    table.insert(cols, { name, "OilSocket" .. hl_suffix })
+    table.insert(cols, { name, get_entry_hl("socket", "OilSocket", is_hidden) })
   elseif entry_type == "link" then
     if not link_name then
       link_name, link_target = get_link_text(name, meta)
     end
     local is_orphan = not (meta and meta.link_stat)
     if not link_name_hl then
-      link_name_hl = (is_orphan and "OilOrphanLink" or "OilLink") .. hl_suffix
+      link_name_hl = get_entry_hl(
+        is_orphan and "orphan_link" or "link",
+        is_orphan and "OilOrphanLink" or "OilLink",
+        is_hidden
+      )
     end
     table.insert(cols, { link_name, link_name_hl })
 
     if link_target then
       if not link_target_hl then
-        link_target_hl = (is_orphan and "OilOrphanLinkTarget" or "OilLinkTarget") .. hl_suffix
+        link_target_hl = get_entry_hl(
+          is_orphan and "orphan_link_target" or "link_target",
+          is_orphan and "OilOrphanLinkTarget" or "OilLinkTarget",
+          is_hidden
+        )
       end
       table.insert(cols, { link_target, link_target_hl })
     end
   else
-    table.insert(cols, { name, "OilFile" .. hl_suffix })
+    table.insert(cols, { name, get_entry_hl("file", "OilFile", is_hidden) })
   end
 
   return cols
