@@ -818,6 +818,8 @@ M.get_edit_path = function(bufnr, entry, callback)
 
   if entry.name == ".." then
     callback(scheme .. pathutil.parent(dir))
+  elseif entry.name == "." then
+    callback(scheme .. dir)
   elseif adapter.get_entry_path then
     adapter.get_entry_path(url, entry, callback)
   else

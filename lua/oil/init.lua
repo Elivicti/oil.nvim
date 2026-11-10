@@ -29,6 +29,7 @@ local M = {}
 ---@field supported_cross_adapter_actions? table<string, oil.CrossAdapterAction> Mapping of adapter name to enum for all other adapters that can be used as a src or dest for move/copy actions.
 ---@field filter_action? fun(action: oil.Action): boolean When present, filter out actions as they are created
 ---@field filter_error? fun(action: oil.ParseError): boolean When present, filter out errors from parsing a buffer
+---@field supports_dotdot? boolean Show the synthetic "." and ".." entries in this adapter's listings
 
 ---Get the entry on a specific line (1-indexed)
 ---@param bufnr integer

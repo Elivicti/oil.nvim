@@ -10,6 +10,9 @@ local sshfs = require("oil.adapters.ssh.sshfs")
 local util = require("oil.util")
 local M = {}
 
+-- Remote directories have parents too, so show the "." and ".." entries
+M.supports_dotdot = true
+
 local FIELD_NAME = constants.FIELD_NAME
 local FIELD_META = constants.FIELD_META
 

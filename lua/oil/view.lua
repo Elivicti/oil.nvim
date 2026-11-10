@@ -636,6 +636,53 @@ local function get_sort_function(adapter, num_entries)
   end
 end
 
+---Build the synthetic "." and ".." entries shown at the top of every listing
+---@param bufnr integer
+---@param adapter oil.Adapter
+---@return oil.InternalEntry[]
+local function get_dotdot_entries(bufnr, adapter)
+  if not config.view_options.show_dotdot or not adapter.supports_dotdot then
+    return {}
+  end
+  local scheme, path = util.parse_url(vim.api.nvim_buf_get_name(bufnr))
+  if not scheme or not path then
+    return {}
+  end
+  -- The Windows drive list is not a real directory and has no parent
+  if fs.is_windows and path == "/" then
+    return {}
+  end
+  local stat_dot, stat_dotdot
+  if adapter.name == "files" then
+    local dir = fs.posix_to_os_path(path)
+    if not dir:match("[/\\]$") then
+      dir = dir .. fs.sep
+    end
+    stat_dot = uv.fs_stat(dir)
+    stat_dotdot = uv.fs_stat(dir .. "..")
+  end
+  return {
+    { 0, ".", "directory", stat_dot and { stat = stat_dot } or nil },
+    { 0, "..", "directory", stat_dotdot and { stat = stat_dotdot } or nil },
+  }
+end
+
+---Whether the "." and ".." entries should be rendered before the other entries.
+---Follows the name sort direction, matching how a reversed listing behaves.
+---@return boolean
+local function dotdot_first()
+  local sort = config.view_options.sort or {}
+  if vim.tbl_isempty(sort) then
+    sort = { { "type", "asc" }, { "name", "asc" } }
+  end
+  for _, pair in ipairs(sort) do
+    if pair[1] == "name" then
+      return pair[2] ~= "desc"
+    end
+  end
+  return true
+end
+
 ---@param bufnr integer
 ---@param opts nil|table
 ---    jump boolean
@@ -682,10 +729,24 @@ local function render_buffer(bufnr, opts)
     col_align[i + 1] = conf and conf.align or "left"
   end
 
-  if M.should_display("..", bufnr) then
-    local cols =
-      M.format_entry_cols({ 0, "..", "directory" }, column_defs, col_width, adapter, true, bufnr)
-    table.insert(line_table, cols)
+  local dotdot_rows = {}
+  for _, entry in ipairs(get_dotdot_entries(bufnr, adapter)) do
+    table.insert(
+      dotdot_rows,
+      M.format_entry_cols(entry, column_defs, col_width, adapter, false, bufnr)
+    )
+  end
+  local put_dotdot_first = dotdot_first()
+  local is_first_render = vim.b[bufnr].oil_dotdot_initial_jump == nil
+  vim.b[bufnr].oil_dotdot_initial_jump = true
+  if put_dotdot_first then
+    for _, row in ipairs(dotdot_rows) do
+      table.insert(line_table, row)
+    end
+    if #dotdot_rows > 0 and (opts.jump_first or (opts.jump and is_first_render)) then
+      -- Don't park the cursor on the "." entry when first opening a directory
+      jump_idx = #dotdot_rows + 1
+    end
   end
 
   for _, entry in ipairs(entry_list) do
@@ -699,6 +760,12 @@ local function render_buffer(bufnr, opts)
         seek_after_render_found = true
         jump_idx = #line_table
       end
+    end
+  end
+
+  if not put_dotdot_first then
+    for _, row in ipairs(dotdot_rows) do
+      table.insert(line_table, row)
     end
   end
 
@@ -718,6 +785,9 @@ local function render_buffer(bufnr, opts)
           if jump_idx then
             local lnum = jump_idx
             local line = vim.api.nvim_buf_get_lines(bufnr, lnum - 1, lnum, true)[1]
+            if not line then
+              return
+            end
             local id_str = line:match("^/(%d+)")
             local id = tonumber(id_str)
             if id then

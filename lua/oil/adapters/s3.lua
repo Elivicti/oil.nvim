@@ -8,6 +8,9 @@ local s3fs = require("oil.adapters.s3.s3fs")
 local util = require("oil.util")
 local M = {}
 
+-- S3 prefixes behave like directories, so show the "." and ".." entries
+M.supports_dotdot = true
+
 local FIELD_META = constants.FIELD_META
 
 ---@class (exact) oil.s3Url

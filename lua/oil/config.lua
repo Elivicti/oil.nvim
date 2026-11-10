@@ -80,6 +80,9 @@ local default_config = {
   view_options = {
     -- Show files and directories that start with "."
     show_hidden = false,
+    -- Show the current directory (".") and parent directory ("..") entries.
+    -- When enabled, they are shown even when `show_hidden` is false, and are ignored when saving.
+    show_dotdot = false,
     -- This function defines what is considered a "hidden" file
     is_hidden_file = function(name, bufnr)
       local m = name:match("^%.")

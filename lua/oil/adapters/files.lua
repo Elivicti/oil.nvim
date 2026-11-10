@@ -11,6 +11,9 @@ local uv = vim.uv or vim.loop
 
 local M = {}
 
+-- This adapter lists real directories, so show the "." and ".." entries
+M.supports_dotdot = true
+
 local FIELD_NAME = constants.FIELD_NAME
 local FIELD_TYPE = constants.FIELD_TYPE
 local FIELD_META = constants.FIELD_META

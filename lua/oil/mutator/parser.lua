@@ -113,6 +113,10 @@ M.parse_line = function(adapter, line, column_defs)
     end
     ret._type = isdir and "directory" or "file"
   end
+  if ret.id == 0 then
+    -- ID 0 is used by the synthetic "." and ".." entries, which are always directories
+    ret._type = "directory"
+  end
   local entry = cache.get_entry_by_id(ret.id)
   ranges.name = { start, start + string.len(rem) - 1 }
   if not entry then
