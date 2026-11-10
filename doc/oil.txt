@@ -97,6 +97,9 @@ CONFIG                                                                *oil-confi
       view_options = {
         -- Show files and directories that start with "."
         show_hidden = false,
+        -- Show the current directory (".") and parent directory ("..") entries.
+        -- When enabled, they are shown even when `show_hidden` is false, and are ignored when saving.
+        show_dotdot = false,
         -- This function defines what is considered a "hidden" file
         is_hidden_file = function(name, bufnr)
           local m = name:match("^%.")
@@ -106,6 +109,19 @@ CONFIG                                                                *oil-confi
         is_always_hidden = function(name, bufnr)
           return false
         end,
+        -- Customize the highlight group used for hidden files. Set a string to use
+        -- the same group for all hidden entries, or a table to configure them per
+        -- entry type. Set a value to false to use the normal (non-hidden) group.
+        -- Ignored for entries where `highlight_filename` returns a group.
+        hidden_highlight = {
+          file = "OilFileHidden",
+          directory = "OilDirHidden",
+          socket = "OilSocketHidden",
+          link = "OilLinkHidden",
+          link_target = "OilLinkTargetHidden",
+          orphan_link = "OilOrphanLinkHidden",
+          orphan_link_target = "OilOrphanLinkTargetHidden",
+        },
         -- Sort file names with numbers in a more intuitive order for humans.
         -- Can be "fast", true, or false. "fast" will turn it off for large directories.
         natural_order = "fast",
@@ -416,7 +432,7 @@ or as a table to pass parameters (e.g. `{"size", highlight = "Special"}`)
 
 type                                                                 *column-type*
     Adapters: *
-    Sortable: this column can be used in view_props.sort
+    Sortable: this column can be used in view_options.sort
     The type of the entry (file, directory, link, etc)
 
     Parameters:
@@ -441,7 +457,7 @@ icon                                                                 *column-ico
 
 size                                                                 *column-size*
     Adapters: files, ssh, s3
-    Sortable: this column can be used in view_props.sort
+    Sortable: this column can be used in view_options.sort
     The size of the file
 
     Parameters:
@@ -452,7 +468,37 @@ size                                                                 *column-siz
 permissions                                                   *column-permissions*
     Adapters: files, ssh
     Editable: this column is read/write
-    Access permissions of the file
+    Access permissions of the file (read-only placeholder on Windows)
+
+    Parameters:
+      {highlight} `string|fun(value: string): string` Highlight group, or
+                  function that returns a highlight group
+      {align}     `"left"|"center"|"right"` Text alignment within the column
+
+owner                                                               *column-owner*
+    Adapters: files
+    Sortable: this column can be used in view_options.sort
+    Owner of the file (current user on Windows)
+
+    Parameters:
+      {highlight} `string|fun(value: string): string` Highlight group, or
+                  function that returns a highlight group
+      {align}     `"left"|"center"|"right"` Text alignment within the column
+
+group                                                               *column-group*
+    Adapters: files
+    Sortable: this column can be used in view_options.sort
+    Group of the file (not available on Windows)
+
+    Parameters:
+      {highlight} `string|fun(value: string): string` Highlight group, or
+                  function that returns a highlight group
+      {align}     `"left"|"center"|"right"` Text alignment within the column
+
+nlink                                                               *column-nlink*
+    Adapters: files
+    Sortable: this column can be used in view_options.sort
+    Number of hard links to the file (Windows reports 1)
 
     Parameters:
       {highlight} `string|fun(value: string): string` Highlight group, or
@@ -461,7 +507,7 @@ permissions                                                   *column-permission
 
 ctime                                                               *column-ctime*
     Adapters: files
-    Sortable: this column can be used in view_props.sort
+    Sortable: this column can be used in view_options.sort
     Change timestamp of the file
 
     Parameters:
@@ -472,7 +518,7 @@ ctime                                                               *column-ctim
 
 mtime                                                               *column-mtime*
     Adapters: files
-    Sortable: this column can be used in view_props.sort
+    Sortable: this column can be used in view_options.sort
     Last modified time of the file
 
     Parameters:
@@ -483,7 +529,7 @@ mtime                                                               *column-mtim
 
 atime                                                               *column-atime*
     Adapters: files
-    Sortable: this column can be used in view_props.sort
+    Sortable: this column can be used in view_options.sort
     Last access time of the file
 
     Parameters:
@@ -494,7 +540,7 @@ atime                                                               *column-atim
 
 birthtime                                                       *column-birthtime*
     Adapters: files, s3
-    Sortable: this column can be used in view_props.sort
+    Sortable: this column can be used in view_options.sort
     The time the file was created
 
     Parameters:

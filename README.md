@@ -133,6 +133,8 @@ require("oil").setup()
 
 Then open a directory with `nvim .`. Use `<CR>` to open a file/directory, and `-` to go up a directory. Otherwise, just treat it like a normal buffer and make changes as you like. Remember to `:w` when you're done to actually perform the actions.
 
+Directory listings do not include `.` and `..` entries by default. Set `view_options.show_dotdot = true` to show them.
+
 If you want to mimic the `vim-vinegar` method of navigating to the parent directory of a file, add this keymap:
 
 ```lua
@@ -226,6 +228,9 @@ require("oil").setup({
   view_options = {
     -- Show files and directories that start with "."
     show_hidden = false,
+    -- Show the current directory (".") and parent directory ("..") entries.
+    -- When enabled, they are shown even when `show_hidden` is false, and are ignored when saving.
+    show_dotdot = false,
     -- This function defines what is considered a "hidden" file
     is_hidden_file = function(name, bufnr)
       local m = name:match("^%.")
@@ -235,6 +240,19 @@ require("oil").setup({
     is_always_hidden = function(name, bufnr)
       return false
     end,
+    -- Customize the highlight group used for hidden files. Set a string to use
+    -- the same group for all hidden entries, or a table to configure them per
+    -- entry type. Set a value to false to use the normal (non-hidden) group.
+    -- Ignored for entries where `highlight_filename` returns a group.
+    hidden_highlight = {
+      file = "OilFileHidden",
+      directory = "OilDirHidden",
+      socket = "OilSocketHidden",
+      link = "OilLinkHidden",
+      link_target = "OilLinkTargetHidden",
+      orphan_link = "OilOrphanLinkHidden",
+      orphan_link_target = "OilOrphanLinkTargetHidden",
+    },
     -- Sort file names with numbers in a more intuitive order for humans.
     -- Can be "fast", true, or false. "fast" will turn it off for large directories.
     natural_order = "fast",

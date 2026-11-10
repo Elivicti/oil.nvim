@@ -304,10 +304,21 @@ local M = {}
 ---@field timeout_ms? integer Time to wait for LSP file operations to complete before skipping.
 ---@field autosave_changes? boolean|"unmodified" Set to true to autosave buffers that are updated with LSP willRenameFiles. Set to "unmodified" to only save unmodified buffers.
 
+---@class (exact) oil.HiddenHighlight
+---@field file? string|false
+---@field directory? string|false
+---@field socket? string|false
+---@field link? string|false
+---@field link_target? string|false
+---@field orphan_link? string|false
+---@field orphan_link_target? string|false
+
 ---@class (exact) oil.ViewOptions
 ---@field show_hidden boolean
+---@field show_dotdot boolean
 ---@field is_hidden_file fun(name: string, bufnr: integer): boolean
 ---@field is_always_hidden fun(name: string, bufnr: integer): boolean
+---@field hidden_highlight oil.HiddenHighlight|string|false
 ---@field natural_order boolean|"fast"
 ---@field case_insensitive boolean
 ---@field sort oil.SortSpec[]
@@ -315,8 +326,10 @@ local M = {}
 
 ---@class (exact) oil.SetupViewOptions
 ---@field show_hidden? boolean Show files and directories that start with "."
+---@field show_dotdot? boolean Show the current directory (".") and parent directory ("..") entries
 ---@field is_hidden_file? fun(name: string, bufnr: integer): boolean This function defines what is considered a "hidden" file
 ---@field is_always_hidden? fun(name: string, bufnr: integer): boolean This function defines what will never be shown, even when `show_hidden` is set
+---@field hidden_highlight? oil.HiddenHighlight|string|false Customize the highlight group used for hidden files
 ---@field natural_order? boolean|"fast" Sort file names with numbers in a more intuitive order for humans. Can be slow for large directories.
 ---@field case_insensitive? boolean Sort file and directory names case insensitive
 ---@field sort? oil.SortSpec[] Sort order for the file list

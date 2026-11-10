@@ -162,7 +162,31 @@ COL_DEFS = [
         "files, ssh",
         True,
         False,
-        "Access permissions of the file",
+        "Access permissions of the file (read-only placeholder on Windows)",
+        UNIVERSAL + [],
+    ),
+    ColumnDef(
+        "owner",
+        "files",
+        False,
+        True,
+        "Owner of the file (current user on Windows)",
+        UNIVERSAL + [],
+    ),
+    ColumnDef(
+        "group",
+        "files",
+        False,
+        True,
+        "Group of the file (not available on Windows)",
+        UNIVERSAL + [],
+    ),
+    ColumnDef(
+        "nlink",
+        "files",
+        False,
+        True,
+        "Number of hard links to the file (Windows reports 1)",
         UNIVERSAL + [],
     ),
     ColumnDef(
@@ -334,7 +358,7 @@ def get_columns_vimdoc() -> "VimdocSection":
         section.body.extend(wrap(f"Adapters: {col.adapters}", 4))
         if col.sortable:
             section.body.extend(
-                wrap(f"Sortable: this column can be used in view_props.sort", 4)
+                wrap(f"Sortable: this column can be used in view_options.sort", 4)
             )
         if col.editable:
             section.body.extend(wrap(f"Editable: this column is read/write", 4))
